@@ -32,11 +32,28 @@ The server will start on port 3001 (or the port specified by the `PORT` environm
 
 ## 🚂 Railway Deployment
 
-This server is configured for Railway deployment:
+This server is configured for Railway deployment.
 
-1. Connect your GitHub repository to Railway
-2. Set the `HOUSECALLPRO_API_KEY` environment variable in Railway
-3. Railway will automatically deploy on push to main branch
+**Railway Project ID:** `27b386fc-8753-4a4a-a057-80c319cc10d5`
+
+### Setup Steps:
+
+1. **Connect Repository** (if not already connected):
+   - Railway Dashboard → Project → Settings → Source
+   - Connect to: `https://github.com/CaptainPhantasy/Carl-Server.git`
+
+2. **Set Environment Variable**:
+   - Railway Dashboard → Project → Variables
+   - Add: `HOUSECALLPRO_API_KEY` = (your Housecall Pro API key)
+
+3. **Deploy**:
+   - Railway will automatically deploy on push to `main` branch
+   - Or manually trigger deployment from Railway dashboard
+
+4. **Get Your URL**:
+   - Railway Dashboard → Project → Settings → Networking
+   - Your app URL will be: `https://your-app-name.up.railway.app`
+   - Use this URL to update ElevenLabs tool configurations
 
 ## 📡 API Endpoints
 
