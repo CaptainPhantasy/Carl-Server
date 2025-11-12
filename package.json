@@ -1,0 +1,17 @@
+{
+  "name": "carl-server",
+  "version": "1.0.0",
+  "description": "Backend API server for Carl - 317 Plumber CRM SuperMind Agent",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "express": "^5.1.0",
+    "form-data": "^4.0.4"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
