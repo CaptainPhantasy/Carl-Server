@@ -50,9 +50,12 @@ This server is configured for Railway deployment.
    - Railway will automatically deploy on push to `main` branch
    - Or manually trigger deployment from Railway dashboard
 
-4. **Get Your URL**:
-   - Railway Dashboard → Project → Settings → Networking
-   - Your app URL will be: `https://your-app-name.up.railway.app`
+4. **Get Your Railway URL**:
+   - **Option 1**: Railway Dashboard → Your Project → Look at the top of the service/deployment card - the URL is displayed there
+   - **Option 2**: Railway Dashboard → Your Project → Click on the service → The URL is shown in the service details
+   - **Option 3**: Railway Dashboard → Your Project → Settings → Domains (if custom domain is set)
+   - **Option 4**: Check the deployment logs - Railway shows the URL when deployment completes
+   - Your app URL will be: `https://your-service-name.up.railway.app` or similar
    - Use this URL to update ElevenLabs tool configurations
 
 ## 📡 API Endpoints
