@@ -1,0 +1,8 @@
+extends:
+  - recommended
+
+rules:
+  # This vendor reference does not define a standard license URL or a uniform
+  # error schema. Inventing either would make generated clients less accurate.
+  info-license-strict: off
+  operation-4xx-response: off

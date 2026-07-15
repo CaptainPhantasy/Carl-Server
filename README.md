@@ -5,13 +5,13 @@ Backend API server for the Carl - 317 Plumber CRM SuperMind Agent, providing web
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18.x or higher
+- Node.js 20.19 or higher
 - Housecall Pro API Key
 
 ### Installation
 
 ```bash
-npm install
+npm ci
 ```
 
 ### Environment Variables
@@ -20,6 +20,8 @@ Set the following environment variable:
 
 ```bash
 HOUSECALLPRO_API_KEY=your_api_key_here
+# Optional, comma-separated. Defaults to Google Drive and Dropbox hosts.
+ATTACHMENT_HOST_ALLOWLIST=drive.google.com,dropbox.com,www.dropbox.com
 ```
 
 ### Running Locally
@@ -29,6 +31,13 @@ npm start
 ```
 
 The server will start on port 3001 (or the port specified by the `PORT` environment variable).
+
+Run the full repository gate with:
+
+```bash
+npm run check
+npm audit --audit-level=low
+```
 
 ## 🚂 Railway Deployment
 
@@ -70,6 +79,7 @@ All endpoints are prefixed with `/api/` and return responses in the format:
 ### Available Endpoints
 
 - `GET /api/get-company` - Get company information
+- `GET /health` - Check process readiness without calling Housecall Pro
 - `POST /api/get-customers` - Get list of customers
 - `POST /api/get-customer` - Get customer by ID
 - `POST /api/create-customer` - Create new customer
@@ -87,6 +97,9 @@ All endpoints are prefixed with `/api/` and return responses in the format:
 
 See `index.js` for the complete list.
 
+The recovered Housecall Pro reference contract is in `housecall.v1.yaml` and
+is checked by Redocly as part of `npm run check`.
+
 ## 🔧 Configuration
 
 ### Agent Configuration
@@ -98,7 +111,7 @@ See `index.js` for the complete list.
 ## 📝 Notes
 
 - All endpoints handle camelCase to snake_case conversion automatically
-- Error responses include detailed logging for debugging
+- Logs avoid request bodies, upstream response bodies, and attachment URLs
 - The server is configured for Railway's environment (PORT, SIGTERM handling)
 
 ## 🔐 Security
@@ -106,4 +119,5 @@ See `index.js` for the complete list.
 - Never commit API keys to the repository
 - Use environment variables for all sensitive data
 - The `.gitignore` file excludes `.env` files
-
+- Attachment downloads require HTTPS and an exact host match from
+  `ATTACHMENT_HOST_ALLOWLIST`; the default does not permit arbitrary URLs
