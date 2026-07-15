@@ -7,19 +7,46 @@ const FormData = require('form-data');
 const app = express();
 const port = process.env.PORT || 3001; // Railway sets PORT automatically
 
-// This line is still good practice, though not strictly needed for this GET request
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 
 // --- Store Your Secret API Key Securely ---
 // NEVER hardcode your API key. Use environment variables.
 // Run your server like this: HOUSECALLPRO_API_KEY="your_key_here" node index.js
 const HOUSECALLPRO_API_KEY = process.env.HOUSECALLPRO_API_KEY;
 const HOUSECALLPRO_BASE_URL = "https://api.housecallpro.com";
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 
-if (!HOUSECALLPRO_API_KEY) {
-  console.error("FATAL ERROR: HOUSECALLPRO_API_KEY environment variable is not set.");
-  process.exit(1); // Stop the server if the key is missing
+function normalizeAttachmentUrl(rawUrl) {
+  const url = new URL(rawUrl);
+  const allowedHosts = new Set(
+    (process.env.ATTACHMENT_HOST_ALLOWLIST || "drive.google.com,dropbox.com,www.dropbox.com")
+      .split(",")
+      .map((host) => host.trim().toLowerCase())
+      .filter(Boolean)
+  );
+
+  if (url.protocol !== "https:" || !allowedHosts.has(url.hostname.toLowerCase())) {
+    throw new Error("fileUrl must use HTTPS and an approved attachment host");
+  }
+
+  if (url.hostname === "drive.google.com") {
+    const fileMatch = url.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    const fileId = fileMatch?.[1] || url.searchParams.get("id");
+    if (fileId && /^[a-zA-Z0-9_-]+$/.test(fileId)) {
+      return new URL(`https://drive.google.com/uc?export=download&id=${fileId}`);
+    }
+  }
+
+  if (url.hostname.endsWith("dropbox.com")) {
+    url.searchParams.set("dl", "1");
+  }
+
+  return url;
 }
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
 
 // THIS IS THE CRITICAL CHANGE:
 // We are now using app.get() to match the tool's "method": "GET"
@@ -40,8 +67,6 @@ app.get('/api/get-company-info', async (req, res) => {
     });
 
     // Log the successful data fetch
-    console.log("Data received from HousecallPro:", response.data);
-
     // --- 2. Send a SINGLE JSON response back to the ElevenLabs Agent ---
     // The agent's LLM will read the content of the "response" key.
     // We must stringify the JSON data from HousecallPro so it can be
@@ -69,7 +94,6 @@ app.get('/api/get-company-info', async (req, res) => {
 // Employee info endpoint
 app.post('/api/get-employee-info', async (req, res) => {
   console.log("Employee info tool call received from ElevenLabs agent!");
-  console.log("Request body:", req.body);
 
   const { employee_id, name } = req.body;
 
@@ -147,7 +171,6 @@ app.post('/api/get-employee-info', async (req, res) => {
     }
   } catch (error) {
     console.error("Error calling HousecallPro API:", error.message);
-    console.error("Error details:", error.response?.data);
     
     const errorResponse = {
       response: JSON.stringify({
@@ -162,7 +185,6 @@ app.post('/api/get-employee-info', async (req, res) => {
 // Create customer endpoint
 app.post('/api/create-customer', async (req, res) => {
   console.log("Create customer tool call received from ElevenLabs agent!");
-  console.log("Request body:", req.body);
 
   // Convert camelCase from tool JSON to snake_case for Housecall Pro API
   const {
@@ -236,8 +258,6 @@ app.post('/api/create-customer', async (req, res) => {
       }
     });
 
-    console.log("Calling Housecall Pro API with data:", customerData);
-
     // Call Housecall Pro API to create customer
     const response = await axios.post(`${HOUSECALLPRO_BASE_URL}/customers`, customerData, {
       headers: {
@@ -247,7 +267,6 @@ app.post('/api/create-customer', async (req, res) => {
       }
     });
 
-    console.log("Customer created successfully:", response.data);
 
     // Return success response to agent
     const responseToAgent = {
@@ -268,7 +287,6 @@ app.post('/api/create-customer', async (req, res) => {
 
   } catch (error) {
     console.error("Error calling Housecall Pro API:", error.message);
-    console.error("Error details:", error.response?.data);
     
     const errorResponse = {
       response: JSON.stringify({
@@ -283,7 +301,6 @@ app.post('/api/create-customer', async (req, res) => {
 // Add attachment to job endpoint
 app.post('/api/add-attachment-to-job', async (req, res) => {
   console.log("Add attachment to job tool call received from ElevenLabs agent!");
-  console.log("Request body:", req.body);
 
   // Extract camelCase fields from req.body
   const { jobId, fileUrl } = req.body;
@@ -308,78 +325,34 @@ app.post('/api/add-attachment-to-job', async (req, res) => {
   }
 
   try {
-    // Helper function to convert Google Drive share links to direct download links
-    const convertGoogleDriveLink = (url) => {
-      try {
-        const urlObj = new URL(url);
-        // Check if it's a Google Drive link
-        if (urlObj.hostname.includes('drive.google.com')) {
-          // Extract file ID from various Google Drive URL formats
-          let fileId = null;
-          
-          // Format 1: /file/d/FILE_ID/view
-          const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-          if (fileMatch) {
-            fileId = fileMatch[1];
-          }
-          
-          // Format 2: ?id=FILE_ID
-          if (!fileId) {
-            const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (idMatch) {
-              fileId = idMatch[1];
-            }
-          }
-          
-          if (fileId) {
-            return `https://drive.google.com/uc?export=download&id=${fileId}`;
-          }
-        }
-        
-        // Convert Dropbox links to direct download
-        if (urlObj.hostname.includes('dropbox.com')) {
-          if (url.includes('?dl=0')) {
-            return url.replace('?dl=0', '?dl=1');
-          }
-          if (!url.includes('?dl=')) {
-            return url + (url.includes('?') ? '&dl=1' : '?dl=1');
-          }
-        }
-        
-        return url; // Return original URL if no conversion needed
-      } catch (e) {
-        return url; // Return original URL if parsing fails
-      }
-    };
+    const directDownloadUrl = normalizeAttachmentUrl(fileUrl);
 
-    // Convert the URL if needed (Google Drive, Dropbox, etc.)
-    const directDownloadUrl = convertGoogleDriveLink(fileUrl);
-    if (directDownloadUrl !== fileUrl) {
-      console.log(`Converted file URL: ${fileUrl} → ${directDownloadUrl}`);
-    }
-
-    // Download the file from the URL
-    console.log(`Downloading file from URL: ${directDownloadUrl}`);
-    const fileResponse = await axios.get(directDownloadUrl, {
+    const fileResponse = await axios.get(directDownloadUrl.toString(), {
       responseType: 'stream',
-      timeout: 30000 // 30 second timeout for file download
+      timeout: 30000,
+      maxContentLength: MAX_ATTACHMENT_BYTES,
+      maxRedirects: 3
     });
 
     // Extract filename from URL or use a default
     const urlPath = new URL(fileUrl).pathname;
-    const filename = urlPath.split('/').pop() || 'attachment';
+    const filename = (urlPath.split('/').pop() || 'attachment')
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .slice(0, 128);
+    const contentType = /^[\w.+-]+\/[\w.+-]+$/.test(fileResponse.headers['content-type'])
+      ? fileResponse.headers['content-type']
+      : 'application/octet-stream';
 
     // Create FormData for multipart/form-data upload
     const formData = new FormData();
     formData.append('file', fileResponse.data, {
       filename: filename,
-      contentType: fileResponse.headers['content-type'] || 'application/octet-stream'
+      contentType
     });
 
     // Upload to Housecall Pro API
-    console.log(`Uploading file to job ${jobId}`);
     const response = await axios.post(
-      `${HOUSECALLPRO_BASE_URL}/jobs/${jobId}/attachments`,
+      `${HOUSECALLPRO_BASE_URL}/jobs/${encodeURIComponent(jobId)}/attachments`,
       formData,
       {
         headers: {
@@ -387,12 +360,10 @@ app.post('/api/add-attachment-to-job', async (req, res) => {
           'Accept': 'application/json',
           ...formData.getHeaders()
         },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity
+        maxContentLength: MAX_ATTACHMENT_BYTES,
+        maxBodyLength: MAX_ATTACHMENT_BYTES
       }
     );
-
-    console.log("Attachment added successfully:", response.data);
 
     // Return success response to agent
     const responseToAgent = {
@@ -408,7 +379,6 @@ app.post('/api/add-attachment-to-job', async (req, res) => {
 
   } catch (error) {
     console.error("Error adding attachment to job:", error.message);
-    console.error("Error details:", error.response?.data);
     
     const errorResponse = {
       response: JSON.stringify({
@@ -1386,8 +1356,6 @@ app.post('/api/create-job', async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating job:", error.message);
-    console.error("Request data sent:", JSON.stringify(jobData || {}, null, 2));
-    console.error("API Error response:", error.response?.data);
     
     // Provide helpful error message for invalid job types
     let errorMessage = `Failed to create job: ${error.response?.data?.message || error.message}`;
@@ -1399,7 +1367,6 @@ app.post('/api/create-job', async (req, res) => {
       response: JSON.stringify({
         status: "error",
         message: errorMessage,
-        details: error.response?.data || null
       })
     });
   }
@@ -1465,8 +1432,6 @@ app.post('/api/create-estimate', async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating estimate:", error.message);
-    console.error("Request data sent:", JSON.stringify(estimateData || {}, null, 2));
-    console.error("API Error response:", error.response?.data);
     
     // Provide helpful error message for missing options
     let errorMessage = `Failed to create estimate: ${error.response?.data?.message || error.message}`;
@@ -1478,7 +1443,6 @@ app.post('/api/create-estimate', async (req, res) => {
       response: JSON.stringify({
         status: "error",
         message: errorMessage,
-        details: error.response?.data || null
       })
     });
   }
@@ -1498,12 +1462,13 @@ app.post('/api/create-appointment', async (req, res) => {
     });
   }
   
-  try {
-    const appointmentData = {
+  const appointmentData = {
       start_time: startTime,
       end_time: endTime,
       dispatched_employees_ids: dispatchedEmployeeIds.split(',').map(id => id.trim())
-    };
+  };
+
+  try {
     
     if (arrivalWindowMinutes !== undefined) {
       appointmentData.arrival_window_minutes = arrivalWindowMinutes;
@@ -1526,13 +1491,10 @@ app.post('/api/create-appointment', async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating appointment:", error.message);
-    console.error("Request data sent:", JSON.stringify(appointmentData, null, 2));
-    console.error("API Error response:", error.response?.data);
     res.status(error.response?.status || 500).json({
       response: JSON.stringify({
         status: "error",
-        message: `Failed to create appointment: ${error.response?.data?.message || error.message}`,
-        details: error.response?.data || null
+        message: "Failed to create appointment"
       })
     });
   }
@@ -2145,30 +2107,44 @@ app.post('/api/delete-webhook', async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting webhook:", error.message);
-    console.error("Request body:", req.body);
-    console.error("API Error response:", error.response?.data);
     res.status(error.response?.status || 500).json({
       response: JSON.stringify({
         status: "error",
-        message: `Failed to delete webhook: ${error.response?.data?.message || error.message}`,
-        details: error.response?.data || null
+        message: "Failed to delete webhook"
       })
     });
   }
 });
 
-// Start the server
-const server = app.listen(port, '0.0.0.0', () => {
-  console.log(`Backend server listening on port ${port}`);
-  console.log("Ready to receive ElevenLabs Tool Calls.");
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+function startServer(listenPort = port) {
+  if (!HOUSECALLPRO_API_KEY) {
+    throw new Error("HOUSECALLPRO_API_KEY environment variable is not set");
+  }
 
-// Graceful shutdown for Railway
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-    process.exit(0);
+  return app.listen(listenPort, "0.0.0.0", () => {
+    console.log(`Backend server listening on port ${listenPort}`);
+    console.log("Ready to receive ElevenLabs Tool Calls.");
+    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
   });
-});
+}
+
+if (require.main === module) {
+  let server;
+  try {
+    server = startServer();
+  } catch (error) {
+    console.error(`FATAL ERROR: ${error.message}`);
+    process.exitCode = 1;
+  }
+
+  if (server) {
+    process.on("SIGTERM", () => {
+      console.log("SIGTERM signal received: closing HTTP server");
+      server.close(() => {
+        console.log("HTTP server closed");
+      });
+    });
+  }
+}
+
+module.exports = { app, normalizeAttachmentUrl, startServer };

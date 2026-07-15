@@ -6,24 +6,41 @@ info:
   contact:
     name: Housecall Engineering
     email: apideveloper@housecallpro.com
+  license:
+    name: Proprietary
 servers:
   - url: 'https://api.housecallpro.com'
 tags:
   - name: Checklists
+    description: Housecall Pro Checklists operations.
   - name: Customers
+    description: Housecall Pro Customers operations.
   - name: Employees
+    description: Housecall Pro Employees operations.
   - name: Estimates
+    description: Housecall Pro Estimates operations.
   - name: Jobs
+    description: Housecall Pro Jobs operations.
   - name: Job Appointments
+    description: Housecall Pro Job Appointments operations.
   - name: Job Invoices
+    description: Housecall Pro Job Invoices operations.
   - name: Job Types
+    description: Housecall Pro Job Types operations.
   - name: Leads
+    description: Housecall Pro Leads operations.
   - name: Lead Sources
+    description: Housecall Pro Lead Sources operations.
   - name: Application
+    description: Housecall Pro Application operations.
   - name: Webhooks
+    description: Housecall Pro Webhooks operations.
   - name: Materials
+    description: Housecall Pro Materials operations.
   - name: Material Categories
+    description: Housecall Pro Material Categories operations.
   - name: Price Forms
+    description: Housecall Pro Price Forms operations.
 paths:
   /application:
     get:
@@ -119,7 +136,7 @@ paths:
           in: query
           name: job_uuids
           description: Id of jobs you want to pull checklists from
-          required: true
+          required: false
         - schema:
             type: array
             items:
@@ -127,7 +144,7 @@ paths:
           in: query
           name: estimate_uuids
           description: Id of estimates you want to pull checklists from
-          required: true
+          required: false
   /customers:
     get:
       summary: Get Customers
@@ -325,19 +342,18 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedList'
+                  - type: object
+                    properties:
+                      addresses:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Address'
       operationId: get-customer-customer_id-addresses
-      requestBody:
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/PaginatedList'
-                - type: object
-                  properties:
-                    addresses:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/Address'
       description: Get all of a customer's addresses
       parameters:
         - schema:
@@ -572,6 +588,8 @@ paths:
           description: Filters jobs with an end time less than or equal to the date sent.
         - schema:
             type: array
+            items:
+              type: string
           in: query
           name: employee_ids
         - schema:
@@ -1094,23 +1112,23 @@ paths:
                         mobile_number: string
                         role: field tech
                         permissions:
-                          can_add_and_edit_job: boolean
-                          can_be_booked_online: boolean
-                          can_call_and_text_with_customers: boolean
-                          can_chat_with_customers: boolean
-                          can_delete_and_cancel_job: boolean
-                          can_edit_message_on_invoice: boolean
-                          can_see_street_view_data: boolean
-                          can_share_job: boolean
-                          can_take_payment_see_prices: boolean
-                          can_see_customers: boolean
-                          can_see_full_schedule: boolean
-                          can_see_future_jobs: boolean
-                          can_see_marketing_campaigns: boolean
-                          can_see_reporting: boolean
-                          can_edit_settings: boolean
-                          is_point_of_contact: boolean
-                          is_admin: boolean
+                          can_add_and_edit_job: false
+                          can_be_booked_online: false
+                          can_call_and_text_with_customers: false
+                          can_chat_with_customers: false
+                          can_delete_and_cancel_job: false
+                          can_edit_message_on_invoice: false
+                          can_see_street_view_data: false
+                          can_share_job: false
+                          can_take_payment_see_prices: false
+                          can_see_customers: false
+                          can_see_full_schedule: false
+                          can_see_future_jobs: false
+                          can_see_marketing_campaigns: false
+                          can_see_reporting: false
+                          can_edit_settings: false
+                          is_point_of_contact: false
+                          is_admin: false
       requestBody:
         content:
           application/json:
@@ -1132,13 +1150,13 @@ paths:
                   type: string
                   minLength: 1
                   format: date-time
-                  example: '2021-01-10T10:45:00'
+                  example: '2021-01-10T10:45:00Z'
                   description: Start time of job in iso8601
                 end_time:
                   type: string
                   minLength: 1
                   format: date-time
-                  example: '2021-01-10T11:45:00'
+                  example: '2021-01-10T11:45:00Z'
                   description: End time of job in iso8601
                 arrival_window_in_minutes:
                   type: number
@@ -1163,8 +1181,8 @@ paths:
             examples:
               example:
                 value:
-                  start_time: '2021-01-10T20:45:00'
-                  end_time: '2021-01-10T21:45:00'
+                  start_time: '2021-01-10T20:45:00Z'
+                  end_time: '2021-01-10T21:45:00Z'
                   arrival_window_in_minutes: 60
                   notify: true
                   notify_pro: true
@@ -1279,23 +1297,23 @@ paths:
                         mobile_number: string
                         role: field tech
                         permissions:
-                          can_add_and_edit_job: boolean
-                          can_be_booked_online: boolean
-                          can_call_and_text_with_customers: boolean
-                          can_chat_with_customers: boolean
-                          can_delete_and_cancel_job: boolean
-                          can_edit_message_on_invoice: boolean
-                          can_see_street_view_data: boolean
-                          can_share_job: boolean
-                          can_take_payment_see_prices: boolean
-                          can_see_customers: boolean
-                          can_see_full_schedule: boolean
-                          can_see_future_jobs: boolean
-                          can_see_marketing_campaigns: boolean
-                          can_see_reporting: boolean
-                          can_edit_settings: boolean
-                          is_point_of_contact: boolean
-                          is_admin: boolean
+                          can_add_and_edit_job: false
+                          can_be_booked_online: false
+                          can_call_and_text_with_customers: false
+                          can_chat_with_customers: false
+                          can_delete_and_cancel_job: false
+                          can_edit_message_on_invoice: false
+                          can_see_street_view_data: false
+                          can_share_job: false
+                          can_take_payment_see_prices: false
+                          can_see_customers: false
+                          can_see_full_schedule: false
+                          can_see_future_jobs: false
+                          can_see_marketing_campaigns: false
+                          can_see_reporting: false
+                          can_edit_settings: false
+                          is_point_of_contact: false
+                          is_admin: false
       requestBody:
         content:
           application/json:
@@ -1734,6 +1752,8 @@ paths:
           description: Filters estimates with an end time less than or equal to the date sent.
         - schema:
             type: array
+            items:
+              type: string
           in: query
           name: employee_ids
           description: Filters estimates by assigned pro id
@@ -1858,6 +1878,7 @@ paths:
           in: query
           name: expand
           description: Array of strings to expand response body
+      operationId: get-estimate-by-id
   '/estimates/{estimate_id}/options/{option_id}/attachments':
     parameters:
       - schema:
@@ -2244,34 +2265,34 @@ paths:
                           state: string
                           zip: string
                         assigned_employees:
-                          id: string
-                          avatar_url: string
-                          color_hex: string
-                          first_name: string
-                          last_name: string
-                          email: string
-                          mobile_number: string
-                          role: string
-                          tags:
-                            - string
-                          permissions:
-                            can_add_and_edit_job: true
-                            can_be_booked_online: true
-                            can_call_and_text_with_customers: true
-                            can_chat_with_customers: true
-                            can_delete_and_cancel_job: true
-                            can_edit_message_on_invoice: true
-                            can_see_street_view_data: true
-                            can_share_job: true
-                            can_take_payment_see_prices: true
-                            can_see_customers: true
-                            can_see_full_schedule: true
-                            can_see_future_jobs: true
-                            can_see_marketing_campaigns: true
-                            can_see_reporting: true
-                            can_edit_settings: true
-                            is_point_of_contact: true
-                            is_admin: true
+                          - id: string
+                            avatar_url: string
+                            color_hex: string
+                            first_name: string
+                            last_name: string
+                            email: string
+                            mobile_number: string
+                            role: string
+                            tags:
+                              - string
+                            permissions:
+                              can_add_and_edit_job: true
+                              can_be_booked_online: true
+                              can_call_and_text_with_customers: true
+                              can_chat_with_customers: true
+                              can_delete_and_cancel_job: true
+                              can_edit_message_on_invoice: true
+                              can_see_street_view_data: true
+                              can_share_job: true
+                              can_take_payment_see_prices: true
+                              can_see_customers: true
+                              can_see_full_schedule: true
+                              can_see_future_jobs: true
+                              can_see_marketing_campaigns: true
+                              can_see_reporting: true
+                              can_edit_settings: true
+                              is_point_of_contact: true
+                              is_admin: true
                         schedule:
                           start_time: string
                           end_time: string
@@ -2362,34 +2383,34 @@ paths:
                       state: string
                       zip: string
                     assigned_employees:
-                      id: string
-                      avatar_url: string
-                      color_hex: string
-                      first_name: string
-                      last_name: string
-                      email: string
-                      mobile_number: string
-                      role: string
-                      tags:
-                        - string
-                      permissions:
-                        can_add_and_edit_job: true
-                        can_be_booked_online: true
-                        can_call_and_text_with_customers: true
-                        can_chat_with_customers: true
-                        can_delete_and_cancel_job: true
-                        can_edit_message_on_invoice: true
-                        can_see_street_view_data: true
-                        can_share_job: true
-                        can_take_payment_see_prices: true
-                        can_see_customers: true
-                        can_see_full_schedule: true
-                        can_see_future_jobs: true
-                        can_see_marketing_campaigns: true
-                        can_see_reporting: true
-                        can_edit_settings: true
-                        is_point_of_contact: true
-                        is_admin: true
+                      - id: string
+                        avatar_url: string
+                        color_hex: string
+                        first_name: string
+                        last_name: string
+                        email: string
+                        mobile_number: string
+                        role: string
+                        tags:
+                          - string
+                        permissions:
+                          can_add_and_edit_job: true
+                          can_be_booked_online: true
+                          can_call_and_text_with_customers: true
+                          can_chat_with_customers: true
+                          can_delete_and_cancel_job: true
+                          can_edit_message_on_invoice: true
+                          can_see_street_view_data: true
+                          can_share_job: true
+                          can_take_payment_see_prices: true
+                          can_see_customers: true
+                          can_see_full_schedule: true
+                          can_see_future_jobs: true
+                          can_see_marketing_campaigns: true
+                          can_see_reporting: true
+                          can_edit_settings: true
+                          is_point_of_contact: true
+                          is_admin: true
                     schedule:
                       start_time: string
                       end_time: string
@@ -2577,6 +2598,8 @@ paths:
       parameters:
         - schema:
             type: array
+            items:
+              type: string
           in: query
           name: employee_ids
           description: Filters leads by a list of employee IDs (string)
@@ -2593,14 +2616,6 @@ paths:
           description: Paginated page number.
         - schema:
             type: string
-            items:
-              type: string
-              enum:
-                - unscheduled
-                - scheduled
-                - in_progress
-                - completed
-                - canceled
             enum:
               - lost
               - open
@@ -2624,17 +2639,23 @@ paths:
           name: sort_direction
         - schema:
             type: array
+            items:
+              type: string
           in: query
           name: tag_ids
           description: Filters leads by a list of tags
         - schema:
             type: array
+            items:
+              type: string
           in: query
           name: lead_source
           description: Filters leads by a single lead_source
         - schema:
             type: array
             uniqueItems: false
+            items:
+              type: string
           in: query
           description: 'Id of locations you want to pull from. * If X-Company-Id header is set, location_ids will be ignored'
           name: location_ids
@@ -2723,6 +2744,8 @@ paths:
                   enum:
                     - estimate
                     - job
+              required:
+                - type
   /lead_sources:
     get:
       summary: Get Lead Sources
@@ -2988,7 +3011,10 @@ paths:
           description: Filters invoices by status.
         - schema:
             type: array
-            example: cus_123
+            example:
+              - cus_123
+            items:
+              type: string
           in: query
           name: customer_uuid
           description: Filters invoices by customer UUIDs.
@@ -3030,13 +3056,13 @@ paths:
           description: Filters invoices with a paid_at less than or equal to the input date
         - schema:
             type: number
-            example: '10'
+            example: 10
           in: query
           name: amount_due_min
           description: Filters invoices with an amount_due greater than or equal to the input amount
         - schema:
             type: number
-            example: '10'
+            example: 10
           in: query
           name: amount_due_max
           description: Filters invoices with an amount_due less than or equal to the input amount
@@ -3842,6 +3868,183 @@ paths:
                       type: array
                       items:
                         type: string
+          multipart/form-data:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  name: Deep Clean
+                  description: Full home deep cleaning service
+                  automatically_add_to_new_job: true
+                  taxable: true
+                  olb_enabled: true
+                  duration_in_minutes: 180
+                  image: null
+                  dynamic_duration_enabled: false
+                  service_area_pricing_enabled: false
+                  default_service_zone_id: null
+                  bookable_as: job
+                  question_1: Do you have pets?
+                  question_2: Any special instructions?
+                  assigned:
+                    pros:
+                      - uuid: pro_0000000000000001
+                        full_name: Jane Professional
+                      - uuid: pro_0000000000000002
+                        full_name: John Professional
+                    tags:
+                      - kitchen
+                      - premium
+                  fields_attributes:
+                    - id: pbpff_1111111111111111
+                      name: Number of rooms
+                      kind: quantity_select
+                      price: 5000
+                      order_index: 0
+                      duration_in_minutes: 30
+                      _destroy: false
+                    - name: Package
+                      kind: single_select
+                      order_index: 1
+                      duration_in_minutes: 60
+                      options_attributes:
+                        - name: Standard
+                          price: 0
+                          duration_in_minutes: 0
+                          _destroy: false
+                        - name: Premium
+                          price: 3000
+                          duration_in_minutes: 15
+                          _destroy: false
+                    - name: Extras
+                      kind: multiple_select
+                      order_index: 2
+                      duration_in_minutes: 0
+                      options_attributes:
+                        - name: Inside fridge
+                          price: 1500
+                          duration_in_minutes: 10
+                          _destroy: false
+                        - name: Inside oven
+                          price: 2000
+                          duration_in_minutes: 15
+                          _destroy: false
+                    - name: Square footage
+                      kind: numerical_range
+                      order_index: 3
+                      duration_in_minutes: 0
+                      options_attributes:
+                        - name: 0–1000
+                          lower_bound: 0
+                          upper_bound: 1000
+                          price: 0
+                          duration_in_minutes: 0
+                          _destroy: false
+                        - name: 1001–2000
+                          lower_bound: 1001
+                          upper_bound: 2000
+                          price: 5000
+                          duration_in_minutes: 30
+                          _destroy: false
+                    - id: pbpff_2222222222222222
+                      _destroy: true
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                automatically_add_to_new_job:
+                  type: boolean
+                taxable:
+                  type: boolean
+                olb_enabled:
+                  type: boolean
+                duration_in_minutes:
+                  type: integer
+                image:
+                  description: 'when uploading an image, send multipart/form-data with a file under image. If sending JSON only, use image: null or omit it.'
+                  type: string
+                  format: binary
+                  nullable: true
+                dynamic_duration_enabled:
+                  type: boolean
+                bookable_as:
+                  type: string
+                  description: 'accepted: "jobs" or "estimates"'
+                question_1:
+                  type: string
+                question_2:
+                  type: string
+                service_area_pricing_enabled:
+                  type: boolean
+                default_service_zone_id:
+                  type: string
+                fields_attributes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      kind:
+                        type: string
+                        description: 'Accepted: "single_select", "multiple select", "quantity_select", "numerical_range"'
+                      price:
+                        type: integer
+                      order_index:
+                        type: integer
+                      duration_in_minutes:
+                        type: integer
+                      _destroy:
+                        type: boolean
+                      options_attributes:
+                        type: array
+                        description: 'accepted when `numerical_ranges`: "lower bound", "upper_bound"'
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            price:
+                              type: integer
+                            duration_in_minutes:
+                              type: integer
+                            _destroy:
+                              type: boolean
+                      service_area_fields_attributes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            service_zone_id:
+                              type: string
+                            price:
+                              type: integer
+                            service_area_field_options_attributes:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  price:
+                                    type: integer
+                assigned:
+                  type: object
+                  properties:
+                    pros:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          uuid:
+                            type: string
+                          full_name:
+                            type: string
+                    tags:
+                      type: array
+                      items:
+                        type: string
         description: ''
     delete:
       summary: Delete Price Form
@@ -4269,18 +4472,6 @@ components:
             employee_id:
               type: string
               description: ID of the employee assigned to the job
-    Phone:
-      title: Phone
-      type: object
-      properties:
-        name:
-          type: string
-        number:
-          type: string
-      required:
-        - name
-        - number
-      x-examples: {}
     Customer:
       allOf:
         - properties:
@@ -4744,7 +4935,6 @@ components:
       properties:
         id:
           type: string
-          format: uuid
           pattern: '^pbpf_[a-f0-9]{32}$'
           example: pbpf_3fa85f6457174562b3fc2c963f66afa6
         fields:
@@ -4759,7 +4949,6 @@ components:
       properties:
         id:
           type: string
-          format: uuid
           pattern: '^pbpff_[a-f0-9]{32}$'
           example: pbpff_d458bfa14c0543cf9d4dd4b549a58a9e
         value:
@@ -4777,7 +4966,6 @@ components:
       properties:
         id:
           type: string
-          format: uuid
           pattern: '^pbpffo_[a-f0-9]{32}$'
           example: pbpffo_b6145991abce4e9c8cd0d7d2014fca01
       required:
@@ -5142,34 +5330,34 @@ components:
             state: string
             zip: string
           assigned_employees:
-            id: string
-            avatar_url: string
-            color_hex: string
-            first_name: string
-            last_name: string
-            email: string
-            mobile_number: string
-            role: string
-            tags:
-              - string
-            permissions:
-              can_add_and_edit_job: true
-              can_be_booked_online: true
-              can_call_and_text_with_customers: true
-              can_chat_with_customers: true
-              can_delete_and_cancel_job: true
-              can_edit_message_on_invoice: true
-              can_see_street_view_data: true
-              can_share_job: true
-              can_take_payment_see_prices: true
-              can_see_customers: true
-              can_see_full_schedule: true
-              can_see_future_jobs: true
-              can_see_marketing_campaigns: true
-              can_see_reporting: true
-              can_edit_settings: true
-              is_point_of_contact: true
-              is_admin: true
+            - id: string
+              avatar_url: string
+              color_hex: string
+              first_name: string
+              last_name: string
+              email: string
+              mobile_number: string
+              role: string
+              tags:
+                - string
+              permissions:
+                can_add_and_edit_job: true
+                can_be_booked_online: true
+                can_call_and_text_with_customers: true
+                can_chat_with_customers: true
+                can_delete_and_cancel_job: true
+                can_edit_message_on_invoice: true
+                can_see_street_view_data: true
+                can_share_job: true
+                can_take_payment_see_prices: true
+                can_see_customers: true
+                can_see_full_schedule: true
+                can_see_future_jobs: true
+                can_see_marketing_campaigns: true
+                can_see_reporting: true
+                can_edit_settings: true
+                is_point_of_contact: true
+                is_admin: true
           schedule:
             start_time: string
             end_time: string
@@ -5916,7 +6104,6 @@ components:
       properties:
         id:
           type: string
-          format: uuid
           pattern: '^pbpf_[a-f0-9]{32}$'
           example: pbpf_3fa85f6457174562b3fc2c963f66afa6
         name:
@@ -5957,7 +6144,6 @@ components:
                 properties:
                   id:
                     type: string
-                    format: uuid
                     pattern: '^pbpff_[a-f0-9]{32}$'
                     example: pbpff_d458bfa14c0543cf9d4dd4b549a58a9e
                   name:
@@ -5980,7 +6166,6 @@ components:
                           properties:
                             id:
                               type: string
-                              format: uuid
                               pattern: '^pbpffo_[a-f0-9]{32}$'
                               example: pbpffo_b59627a1f9284c12a6a981c6cc2d97c5
                             name:
@@ -6029,7 +6214,6 @@ components:
                       properties:
                         id:
                           type: string
-                          format: uuid
                           pattern: '^pro_[a-f0-9]{32}$'
                           example: pro_b9d8d7384b894851b03c1df9a748f653
                         full_name:
@@ -6232,3 +6416,7 @@ components:
           tokenUrl: ''
           refreshUrl: ''
           scopes: {}
+security:
+  - CompanyApiKey: []
+  - ApplicationApiKey: []
+  - HousecallUserOAuthToken: []

@@ -4,14 +4,27 @@
   "description": "Backend API server for Carl - 317 Plumber CRM SuperMind Agent",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint .",
+    "test": "node --test",
+    "validate:openapi": "redocly lint housecall.v1.yaml",
+    "check": "npm run lint && npm test && npm run validate:openapi"
   },
   "dependencies": {
-    "axios": "^1.13.2",
-    "express": "^5.1.0",
-    "form-data": "^4.0.4"
+    "axios": "1.18.1",
+    "express": "5.2.1",
+    "form-data": "4.0.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@redocly/cli": "2.39.0",
+    "eslint": "9.39.5",
+    "globals": "16.5.0"
+  },
+  "overrides": {
+    "path-to-regexp": "8.4.2"
   },
   "engines": {
-    "node": ">=18.x"
+    "node": ">=20.19.0"
   }
 }
