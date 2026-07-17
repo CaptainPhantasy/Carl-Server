@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "baseBranch": "main",
+  "publish": true,
+  "gates": [
+    {
+      "name": "install",
+      "command": ["npm", "ci", "--ignore-scripts"],
+      "required": true
+    },
+    {
+      "name": "dependency-audit",
+      "command": ["npm", "audit", "--audit-level=high"],
+      "required": true
+    },
+    {
+      "name": "server-syntax",
+      "command": ["node", "--check", "index.js"],
+      "required": true
+    },
+    {
+      "name": "asset-contract",
+      "command": [
+        "sh",
+        "-c",
+        "sips -g pixelWidth -g pixelHeight -g format 317logo.jpg | grep -q 'pixelWidth: 480' && ruby -e 'require \"yaml\"; x=YAML.load_file(\"housecall.v1.yaml\"); abort \"invalid OpenAPI contract\" unless x[\"openapi\"] == \"3.0.0\" && x[\"paths\"].is_a?(Hash) && x[\"paths\"].length == 60'"
+      ],
+      "required": true
+    },
+    {
+      "name": "server-smoke",
+      "command": [
+        "sh",
+        "-c",
+        "PORT=43179 HOUSECALLPRO_API_KEY=test-placeholder node index.js >/tmp/carl-server-proofline.log 2>&1 & pid=$!; trap 'kill -TERM $pid 2>/dev/null || true' EXIT; i=0; until code=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:43179/ 2>/dev/null) && [ \"$code\" = 404 ]; do i=$((i+1)); [ $i -ge 50 ] && exit 1; sleep 0.1; done; kill -TERM $pid; wait $pid"
+      ],
+      "required": true
+    }
+  ],
+  "include": [
+    ".gitleaks.toml",
+    ".proofline.json",
+    "317logo.jpg",
+    "housecall.v1.yaml",
+    "package-lock.json"
+  ],
+  "deny": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.key",
+    "agent_configs/**",
+    "agents.json",
+    "node_modules/**",
+    "**/node_modules/**",
+    ".git/**",
+    ".harness/**",
+    ".pi/**",
+    ".omp/**",
+    ".floyd/**",
+    ".claude/**",
+    ".planning/**"
+  ]
+}
